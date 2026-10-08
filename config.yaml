@@ -1,0 +1,59 @@
+# All tunable thresholds live here (nothing important is buried in the notebook).
+video:
+  source: 0                  # 0 = default webcam, or a path to a video file e.g. "data/sample/test.mp4"
+  process_width: 640         # frames are resized to this width before analysis
+
+rates:
+  rolling_window_s: 5.0      # length of the rolling feature window
+  prediction_interval_s: 1.0 # a new feature vector / risk score every N seconds
+  face_fps: 10               # MediaPipe face+iris processing rate (clock-based, not frame-count based)
+  yolo_fps: 3                # YOLO person/object processing rate
+
+face:
+  max_faces: 2
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+gaze:
+  calibration_s: 3.0         # candidate looks at the screen for this long -> personal "centre" baseline (0 = off)
+  # deviation from the baseline (in landmark-ratio units) that counts as "looking away"
+  iris_x_thresh: 0.12
+  iris_y_thresh: 0.15
+  head_x_thresh: 0.12
+  head_y_thresh: 0.10
+  # baseline used only when calibration_s = 0
+  default_neutral: {iris_x: 0.5, iris_y: 0.5, head_x: 0.5, head_y: 0.55}
+
+yolo:
+  model: yolo11n.pt          # downloaded into models/ on first run
+  imgsz: 640
+  tracker: bytetrack.yaml
+  person_min_conf: 0.45
+  object_min_conf: 0.40
+  min_track_hits: 2          # a tracked object must be seen in >= N YOLO runs before it counts (kills 1-frame noise)
+  # group -> COCO class names. Names missing from the model are skipped with a warning
+  # (COCO has no "tablet" class, so that group stays empty until you use a custom model).
+  prohibited:
+    phone: ["cell phone"]
+    laptop: ["laptop"]
+    tablet: []
+    other: []
+
+events:
+  run_gap_tolerance_s: 1.5   # a state may flicker off for up to this long without ending the run
+  face_missing_s: 3.0
+  gaze_away_s: 4.0
+  second_person_s: 3.0
+  object_s: 2.0              # OBJECT_PERSISTENCE_THRESHOLD: continuous presence before an object event fires
+  high_priority: [SECOND_PERSON_DETECTED, PROHIBITED_OBJECT_DETECTED]
+
+risk:                        # rule-based placeholder score, NOT a calibrated probability (plug in your XGBoost via risk_fn)
+  suspicious_threshold: 0.55
+  weights: {face_missing: 0.40, gaze_away: 0.25, second_person: 0.60, phone: 0.70, laptop: 0.50, tablet: 0.60, other: 0.40}
+
+evidence:
+  pre_s: 5.0
+  post_s: 5.0
+  clip_fps: 10
+  clip_width: 480
+  sessions_dir: data/sessions

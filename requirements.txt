@@ -1,0 +1,19 @@
+# Camera-watching pipeline.
+# OpenCV caveat: ultralytics pulls opencv-python and mediapipe pulls opencv-contrib-python; both ship the same `cv2`
+# module and overwrite each other (that is the classic "no attribute 'imshow'" / wrong-version error).
+# After `pip install -r requirements.txt`, keep ONLY the contrib wheel:
+#   pip uninstall -y opencv-python opencv-contrib-python
+#   pip install --no-deps opencv-contrib-python==4.11.0.86
+opencv-contrib-python==4.11.0.86
+mediapipe==0.10.21
+ultralytics>=8.3
+lap>=0.5.12
+numpy>=1.26,<2
+pandas
+pyyaml
+
+# running the notebook
+ipykernel
+nbformat
+nbclient
+nbconvert
